@@ -211,6 +211,18 @@ static void free_fn(rc_Function *f) {
 	efree(f->extdef);
 }
 
+static char *unsetvars[] = {
+	"PWD="
+};
+
+static bool initunset(char *env) {
+	int i;
+	for (i = 0; i < arraysize(unsetvars); i++)
+		if (strncmp(env, unsetvars[i], strlen(unsetvars[i])) == 0)
+			return TRUE;
+	return FALSE;
+}
+
 extern void initenv(char **envp) {
 	int n;
 	for (n = 0; envp[n] != NULL; n++)
@@ -224,7 +236,8 @@ extern void initenv(char **envp) {
 			if (!dashpee)
 				fnassign_string(*envp);
 		} else {
-			if (!varassign_string(*envp)) /* add to bozo env */
+			if (!initunset(*envp) && !varassign_string(*envp))
+				/* add to bozo env */
 				env[bozosize++] = *envp;
 		}
 }
